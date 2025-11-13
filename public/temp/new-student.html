@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Dashboard - HMS</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="page-container flex justify-between items-center">
+            <div class="navbar-brand flex items-center gap-4">
+                <i class="bi bi-building" style="font-size: 1.5rem;"></i>
+                <span>Student Dashboard</span>
+            </div>
+            <button onclick="logout()" class="btn btn-outline">
+                <i class="bi bi-box-arrow-right"></i>
+                Sign Out
+            </button>
+        </div>
+    </nav>
+
+    <div class="page-container">
+        <div class="grid grid-cols-2 mb-4">
+            <!-- Personal Info Card -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 style="font-size: 1.25rem; font-weight: 600;">Personal Information</h2>
+                </div>
+                <div class="card-body">
+                    <div id="studentInfo">
+                        <div class="placeholder-content">
+                            <div class="placeholder"></div>
+                            <div class="placeholder"></div>
+                            <div class="placeholder"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Hostel Info Card -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 style="font-size: 1.25rem; font-weight: 600;">Hostel Details</h2>
+                </div>
+                <div class="card-body">
+                    <div id="hostelInfo">
+                        <div class="placeholder-content">
+                            <div class="placeholder"></div>
+                            <div class="placeholder"></div>
+                            <div class="placeholder"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Fees Card -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h2 style="font-size: 1.25rem; font-weight: 600;">Fees Status</h2>
+            </div>
+            <div class="card-body">
+                <div id="feesInfo">
+                    <div class="placeholder-content">
+                        <div class="placeholder"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Change Password Card -->
+        <div class="card">
+            <div class="card-header">
+                <h2 style="font-size: 1.25rem; font-weight: 600;">Security</h2>
+            </div>
+            <div class="card-body">
+                <form onsubmit="return false;" class="grid grid-cols-2 gap-4">
+                    <div class="form-group">
+                        <label class="form-label">New Password</label>
+                        <input type="password" class="form-control" id="newPassword" placeholder="Enter new password">
+                    </div>
+                    <div class="flex items-center">
+                        <button onclick="changePassword()" class="btn btn-primary">
+                            <i class="bi bi-shield-check"></i>
+                            Update Password
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let studentData = null;
+
+        async function checkAuth() {
+            const res = await fetch('/api/current-user', {
+                credentials: 'include'
+            });
+            if (!res.ok) window.location.href = 'login.html';
+            const user = await res.json();
+            if (user.role !== 'student') window.location.href = 'login.html';
+            return user;
+        }
+
+        async function loadProfile() {
+            const res = await fetch('/api/student-profile', {
+                credentials: 'include'
+            });
+            if (!res.ok) return;
+            studentData = await res.json();
+            
+            document.getElementById('studentInfo').innerHTML = `
+                <div class="grid gap-4">
+                    <div class="flex items-center gap-4">
+                        <div style="width: 48px; height: 48px; background: var(--primary); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                            <i class="bi bi-person" style="font-size: 1.5rem;"></i>
+                        </div>
+                        <div>
+                            <h3 style="font-weight: 600; margin: 0;">${studentData.Firstname} ${studentData.Lastname}</h3>
+                            <p style="color: var(--gray-500); margin: 0;">ID: ${studentData.StudentId}</p>
+                        </div>
+                    </div>
+                    <div class="grid gap-2">
+                        <div class="flex items-center gap-2">
+                            <i class="bi bi-envelope text-gray-400"></i>
+                            <span>${studentData.Email || 'Not provided'}</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <i class="bi bi-telephone text-gray-400"></i>
+                            <span>${studentData.MobNo || 'Not provided'}</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <i class="bi bi-book text-gray-400"></i>
+                            <span>${studentData.Dept} - ${studentData.Degree}</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('hostelInfo').innerHTML = `
+                <div class="grid gap-4">
+                    <div class="stats-card">
+                        <div class="flex items-center gap-4">
+                            <i class="bi bi-house-door" style="font-size: 1.5rem; color: var(--primary);"></i>
+                            <div>
+                                <div class="stats-card-title">Room Number</div>
+                                <div class="stats-card-value">${studentData.RoomNo || 'Not assigned'}</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="stats-card">
+                        <div class="flex items-center gap-4">
+                            <i class="bi bi-building" style="font-size: 1.5rem; color: var(--info);"></i>
+                            <div>
+                                <div class="stats-card-title">Block Name</div>
+                                <div class="stats-card-value">${studentData.BlockName || 'Not assigned'}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        async function loadFees() {
+            const res = await fetch('/api/student-fees', {
+                credentials: 'include'
+            });
+            if (!res.ok) return;
+            const data = await res.json();
+
+            const progress = (data.FeesPaid / 50000) * 100;
+            
+            document.getElementById('feesInfo').innerHTML = `
+                <div class="flex items-center gap-4">
+                    <div style="flex: 1;">
+                        <div class="progress-track" style="height: 8px; background: var(--gray-200); border-radius: 4px; overflow: hidden;">
+                            <div class="progress-bar" style="width: ${progress}%; height: 100%; background: var(--success); transition: width 0.3s ease;"></div>
+                        </div>
+                        <div class="flex justify-between mt-2">
+                            <span style="color: var(--gray-500);">Paid: ₹${data.FeesPaid}</span>
+                            <span style="color: var(--gray-500);">Total: ₹50,000</span>
+                        </div>
+                    </div>
+                    <div class="stats-card" style="width: 200px;">
+                        <div class="stats-card-title">Remaining</div>
+                        <div class="stats-card-value">₹${data.FeesRemaining}</div>
+                    </div>
+                </div>
+            `;
+        }
+
+        async function changePassword() {
+            const newPassword = document.getElementById('newPassword').value;
+            if (!newPassword) return;
+
+            const res = await fetch('/api/student-password', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({ newPassword })
+            });
+
+            if (res.ok) {
+                alert('Password updated successfully');
+                document.getElementById('newPassword').value = '';
+            } else {
+                alert('Failed to update password');
+            }
+        }
+
+        async function logout() {
+            await fetch('/api/logout', {
+                method: 'POST',
+                credentials: 'include'
+            });
+            window.location.href = 'login.html';
+        }
+
+        async function init() {
+            await checkAuth();
+            await Promise.all([
+                loadProfile(),
+                loadFees()
+            ]);
+        }
+
+        init();
+    </script>
+</body>
+</html>

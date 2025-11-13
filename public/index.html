@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Hostel Management</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* small page-level tweaks to keep index compact */
+        .landing { max-width: 1100px; margin: 24px auto; }
+        .header { display:flex; align-items:center; justify-content:space-between; gap:16px; margin-bottom:18px; }
+        nav { display:flex; gap:8px; }
+        .tab { padding:8px 12px; border-radius:8px; border:none; cursor:pointer; }
+        .tab.active { box-shadow:0 6px 20px rgba(0,0,0,0.12); }
+        .content { background: #fff; padding:18px; border-radius:12px; }
+        .table-wrap { overflow:auto; }
+        table { width:100%; border-collapse:collapse; }
+        th,td { padding:8px 10px; border-bottom:1px solid #eee; text-align:left; }
+    </style>
+</head>
+<body>
+    <div class="landing">
+        <header class="header">
+            <h1>Hostel Management</h1>
+            <nav>
+                <button class="tab active" onclick="showTab('blockinfo', event)">Blocks</button>
+                <button class="tab" onclick="showTab('roominfo', event)">Rooms</button>
+                <button class="tab" onclick="showTab('messinfo', event)">Mess</button>
+                <button class="tab" onclick="showTab('feesinfo', event)">Fees</button>
+                <button class="tab" onclick="location.href='login.html'">Login</button>
+            </nav>
+        </header>
+
+        <main id="content" class="content">
+            <section id="blockinfo" class="tab-content active">
+                <h2>Block Info</h2>
+                <div class="table-wrap"><table id="blockinfoTable"><tbody></tbody></table></div>
+            </section>
+
+            <section id="roominfo" class="tab-content">
+                <h2>Room Info</h2>
+                <div class="table-wrap"><table id="roominfoTable"><tbody></tbody></table></div>
+            </section>
+
+            <section id="messinfo" class="tab-content">
+                <h2>Mess Info</h2>
+                <div class="table-wrap"><table id="messinfoTable"><tbody></tbody></table></div>
+            </section>
+
+            <section id="feesinfo" class="tab-content">
+                <h2>Fees Info</h2>
+                <div class="table-wrap"><table id="feesinfoTable"><tbody></tbody></table></div>
+            </section>
+        </main>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

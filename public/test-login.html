@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Login</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 400px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        input, button {
+            display: block;
+            width: 100%;
+            margin: 10px 0;
+            padding: 10px;
+            font-size: 16px;
+        }
+        button {
+            background: #4f46e5;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        #status {
+            margin-top: 20px;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .success { background: #22c55e; color: white; }
+        .error { background: #ef4444; color: white; }
+    </style>
+</head>
+<body>
+    <h1>Test Login</h1>
+    <input type="text" id="username" placeholder="Username" value="shreehari">
+    <input type="password" id="password" placeholder="Password" value="pass123">
+    <button onclick="testLogin()">Test Login</button>
+    <div id="status"></div>
+
+    <script>
+        async function testLogin() {
+            const statusDiv = document.getElementById('status');
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            
+            statusDiv.textContent = 'Testing login...';
+            statusDiv.className = '';
+            
+            console.log('Testing login with:', username, '/', password);
+            
+            try {
+                const response = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({ username, password })
+                });
+                
+                console.log('Response status:', response.status);
+                const data = await response.json();
+                console.log('Response data:', data);
+                
+                if (response.ok) {
+                    statusDiv.textContent = `✓ Login successful! Role: ${data.role}, ID: ${data.id}`;
+                    statusDiv.className = 'success';
+                    
+                    setTimeout(() => {
+                        window.location.href = data.role === 'student' ? 'student.html' : 'manager.html';
+                    }, 2000);
+                } else {
+                    statusDiv.textContent = `✗ Login failed: ${data.error}`;
+                    statusDiv.className = 'error';
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                statusDiv.textContent = `✗ Error: ${error.message}`;
+                statusDiv.className = 'error';
+            }
+        }
+        
+        // Allow Enter key to submit
+        document.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') testLogin();
+        });
+    </script>
+</body>
+</html>
