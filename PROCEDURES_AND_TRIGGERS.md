@@ -4,7 +4,7 @@ This document describes the stored procedures and triggers used in the Hostel Ma
 
 ## Overview
 
-The application now uses **2 stored procedures** and **2 triggers** to handle database operations more efficiently and maintain data consistency.
+The application now uses **2 stored procedures**, **1 function**, and **2 triggers** to handle database operations more efficiently and maintain data consistency.
 
 ---
 
@@ -57,6 +57,35 @@ CALL sp_update_fee_payment(101, 25000.00);
 1. Checks if a fees record exists for the student
 2. If yes, updates the `FeesPaid` amount
 3. If no, creates a new record with the specified amount
+
+---
+
+## Functions
+
+### 1. `fn_remaining_fees`
+**Purpose:** Calculates the remaining fees for a student.
+
+**Parameters:**
+- `p_student_id` (INT): The student's ID
+
+**Returns:** DECIMAL(10,2) - The remaining fees amount
+
+**Usage in Flask:**
+```python
+rows = query('SELECT fn_remaining_fees(%s) as FeesRemaining', (student_id,))
+feesRemaining = rows[0].get('FeesRemaining')
+```
+
+**SQL:**
+```sql
+SELECT fn_remaining_fees(101) as Remaining;
+```
+
+**Logic:**
+1. Gets the fees paid by the student from FeesInfo table
+2. Calculates: Total Fees (50,000) - Fees Paid
+3. Returns remaining amount (minimum 0)
+4. Automatically handles both FeesPaid and Amount column names
 
 ---
 
@@ -174,8 +203,9 @@ SELECT * FROM RoomInfo WHERE RoomNo = 101;
 
 **Total Database Objects:**
 - **Procedures:** 2 (`sp_assign_room`, `sp_update_fee_payment`)
+- **Functions:** 1 (`fn_remaining_fees`)
 - **Triggers:** 2 (`trg_reduce_room_vacancy`, `trg_increase_room_vacancy`)
-- **Total:** 4 database objects
+- **Total:** 5 database objects
 
 **Benefits:**
 - ✅ Automatic vacancy management

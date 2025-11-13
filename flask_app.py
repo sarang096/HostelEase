@@ -242,17 +242,25 @@ def student_fees():
     
     student = student_info[0]
         
-    # Get fees info
+    # Get fees info using the database function fn_remaining_fees
     fees_col = detect_fees_column()
     if not fees_col:
         feesPaid = 0
+        feesRemaining = 50000
     else:
-        rows = query(f'SELECT {fees_col} FROM FeesInfo WHERE StudentId = %s', (student_id,))
-        feesPaid = rows[0].get(fees_col) if rows else 0
+        rows = query(f'SELECT {fees_col}, fn_remaining_fees(%s) as FeesRemaining FROM FeesInfo WHERE StudentId = %s', (student_id, student_id))
+        if rows:
+            feesPaid = rows[0].get(fees_col, 0)
+            feesRemaining = rows[0].get('FeesRemaining', 50000)
+        else:
+            feesPaid = 0
+            feesRemaining = 50000
     try:
         feesPaid = float(feesPaid) if feesPaid is not None else 0
+        feesRemaining = float(feesRemaining) if feesRemaining is not None else 50000
     except Exception:
         feesPaid = 0
+        feesRemaining = 50000
 
     # Get room info - use same logic as student_profile
     room_no = None
@@ -298,7 +306,7 @@ def student_fees():
 
     return jsonify({
         'FeesPaid': feesPaid,
-        'FeesRemaining': max(0, 50000 - feesPaid),
+        'FeesRemaining': feesRemaining,  # Using fn_remaining_fees function result
         'RoomNo': room_no,
         'BlockName': block_name
     })
@@ -395,14 +403,12 @@ def delete_student(student_id):
     if not rows:
         return jsonify({'error': 'Student not found'}), 404
     student = rows[0]
-    fees_col = detect_fees_column()
-    if not fees_col:
-        paidAmount = 0
-    else:
-        fees_rows = query(f'SELECT {fees_col} FROM FeesInfo WHERE StudentId = %s', (student_id,))
-        paidAmount = float(fees_rows[0].get(fees_col) or 0) if fees_rows else 0
-    if paidAmount < 50000:
-        remaining = 50000 - paidAmount
+    
+    # Use fn_remaining_fees function to check if fees are paid
+    remaining_rows = query('SELECT fn_remaining_fees(%s) as Remaining', (student_id,))
+    remaining = float(remaining_rows[0].get('Remaining', 50000)) if remaining_rows else 50000
+    
+    if remaining > 0:
         return jsonify({'error': f'Cannot delete student with unpaid fees. Remaining: ₹{remaining}'}), 400
 
     # Update mess and block vacancy manually (no triggers for these)

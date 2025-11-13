@@ -6,10 +6,11 @@
 |-----------|----------------------------|----------------------------------|
 | Procedure | `sp_assign_room`           | Assign room to student           |
 | Procedure | `sp_update_fee_payment`    | Update/insert fee payment        |
+| Function  | `fn_remaining_fees`        | Calculate remaining fees         |
 | Trigger   | `trg_reduce_room_vacancy`  | Auto-reduce vacancy on INSERT    |
 | Trigger   | `trg_increase_room_vacancy`| Auto-increase vacancy on DELETE  |
 
-**Total: 2 Procedures + 2 Triggers = 4 Database Objects**
+**Total: 2 Procedures + 1 Function + 2 Triggers = 5 Database Objects**
 
 ---
 
@@ -38,8 +39,14 @@ CALL sp_assign_room(1, 101, 1);
 -- Check procedures
 SHOW PROCEDURE STATUS WHERE Db = 'hostel_db';
 
+-- Check functions
+SHOW FUNCTION STATUS WHERE Db = 'hostel_db';
+
 -- Check triggers
 SHOW TRIGGERS;
+
+-- Use function
+SELECT fn_remaining_fees(1) as Remaining;
 ```
 
 ### In Flask (Automatic)

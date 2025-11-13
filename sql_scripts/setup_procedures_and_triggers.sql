@@ -5,9 +5,10 @@
 
 USE hostel_db;
 
--- Drop existing procedures and triggers if they exist
+-- Drop existing procedures, functions, and triggers if they exist
 DROP PROCEDURE IF EXISTS sp_assign_room;
 DROP PROCEDURE IF EXISTS sp_update_fee_payment;
+DROP FUNCTION IF EXISTS fn_remaining_fees;
 DROP TRIGGER IF EXISTS trg_reduce_room_vacancy;
 DROP TRIGGER IF EXISTS trg_increase_room_vacancy;
 
@@ -73,6 +74,51 @@ BEGIN
 END$$
 
 -- ===================================================================
+-- FUNCTIONS
+-- ===================================================================
+
+-- Function 1: Calculate Remaining Fees
+-- Returns the remaining fees for a student (Total - Paid)
+-- Handles both FeesPaid and Amount column names
+CREATE FUNCTION fn_remaining_fees(p_student_id INT)
+RETURNS DECIMAL(10,2)
+DETERMINISTIC
+READS SQL DATA
+BEGIN
+    DECLARE total_fees DECIMAL(10,2) DEFAULT 50000.00;
+    DECLARE fees_paid DECIMAL(10,2) DEFAULT 0.00;
+    DECLARE remaining DECIMAL(10,2);
+    DECLARE column_exists INT DEFAULT 0;
+    
+    -- Check if FeesPaid column exists
+    SELECT COUNT(*) INTO column_exists
+    FROM information_schema.columns
+    WHERE table_schema = 'hostel_db'
+    AND table_name = 'FeesInfo'
+    AND column_name = 'FeesPaid';
+    
+    IF column_exists > 0 THEN
+        SELECT COALESCE(FeesPaid, 0) INTO fees_paid
+        FROM FeesInfo
+        WHERE StudentId = p_student_id;
+    ELSE
+        SELECT COALESCE(Amount, 0) INTO fees_paid
+        FROM FeesInfo
+        WHERE StudentId = p_student_id;
+    END IF;
+    
+    -- Calculate remaining fees
+    SET remaining = total_fees - fees_paid;
+    
+    -- Return remaining fees (cannot be negative)
+    IF remaining < 0 THEN
+        RETURN 0;
+    ELSE
+        RETURN remaining;
+    END IF;
+END$$
+
+-- ===================================================================
 -- TRIGGERS
 -- ===================================================================
 
@@ -130,8 +176,11 @@ DELIMITER ;
 -- Show all procedures
 SHOW PROCEDURE STATUS WHERE Db = 'hostel_db';
 
+-- Show all functions
+SHOW FUNCTION STATUS WHERE Db = 'hostel_db';
+
 -- Show all triggers
 SHOW TRIGGERS;
 
 -- Success message
-SELECT 'All procedures and triggers have been successfully created!' AS Status;
+SELECT 'All procedures, functions, and triggers have been successfully created!' AS Status;

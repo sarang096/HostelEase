@@ -2,11 +2,14 @@
 
 ## 📊 Database Objects Count
 
-**Total: 4 database objects**
+**Total: 5 database objects**
 
 ### Stored Procedures: 2
 1. `sp_assign_room` - Assigns rooms to students with vacancy validation
 2. `sp_update_fee_payment` - Handles fee payment updates/inserts
+
+### Functions: 1
+1. `fn_remaining_fees` - Calculates remaining fees for a student
 
 ### Triggers: 2
 1. `trg_reduce_room_vacancy` - Automatically reduces room vacancy on student INSERT
@@ -215,7 +218,8 @@ Body: {
 
 Your Hostel Management System now uses:
 - **2 stored procedures** for encapsulated business logic
+- **1 function** for calculating remaining fees
 - **2 triggers** for automatic data consistency
-- **Total: 4 database objects** working seamlessly with Flask
+- **Total: 5 database objects** working seamlessly with Flask
 
 The application maintains all existing functionality while benefiting from improved data integrity, cleaner code, and better maintainability.
